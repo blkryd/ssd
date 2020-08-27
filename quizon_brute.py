@@ -1,5 +1,4 @@
 import requests ,sys , json
-from bs4 import BeautifulSoup
 from urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
 headers = {
